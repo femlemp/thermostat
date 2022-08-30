@@ -54,4 +54,4 @@ fuse:
 connect:
 	$(PROG)
 version:
-	($СС) --version > README.md.txt && cat README.md.txt | head -n1 | tail -n1 >> README.md
+	($СС) --version > README.md.txt && cat README.md.txt | head -n1 | tail -n1 >> README.md && rm -rf README.md.txt
