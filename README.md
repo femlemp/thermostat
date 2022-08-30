@@ -1,4 +1,6 @@
 # thermostat
+
+!WORK IN PROGRESS!
 control measures temperature in atmega328p with NTC thermistor 10kOhm and rule pin realay
 ```
 build: make -f Makefile.mak command 
