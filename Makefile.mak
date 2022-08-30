@@ -17,7 +17,7 @@ OBJ_LST = avr-objdump
 PROGRAMM = avrdude
 PROGRAMMER = usbasp
 PROG_MCU = m328p
-FUSE_H = 0xD1
+FUSE_H = 0xFF
 ##0xD9
 FUSE_L = 0xEE
 FUSE_EXT = 0xFF
