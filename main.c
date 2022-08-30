@@ -34,17 +34,17 @@ volatile uint32_t timer_cnt=0;
 /* ENCODER
 <-left
     ____   __
-S1	   |__|	  	<- check falling edge
+S1     |__|	<- check falling edge
   
    __   ____
 S2   |__|   	<-0 value--
   
  -> right
   ____   ___ 
-S1	 |__|	  	<- check falling edge
+S1    |__|	<- check falling edge
   
    ____   __
-S2 	   |__|   	<-1 value++  
+S2     |__|   	<-1 value++  
  */
  
 ISR(INT0_vect){
