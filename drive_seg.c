@@ -6,15 +6,15 @@ static const uint8_t adr_w = 0b01000000;
 /* SEG:TOD-5263BMB-N
 
 	__A__			DIG1			DIG2
-	|	|			5V-14 			5V-13
-   F|	|B			A-16(p0)		A-11(p10)
-	|_G_|			B-15			B-10
-	|	|  			C-3				C-8   
-   E|	|C   		D-2				D-6 
-	|_D_|.DP     	E-1				E-5
-					F-18			F-12
-					G-17(p6)		G-7(p16)
-					DP-4(p7)		DP-9(p17)
+	|    |			5V-14 			5V-13
+       F|    |B			A-16(p0)		A-11(p10)
+	|_G__|			B-15			B-10
+	|    |  		C-3			C-8   
+       E|    |C   		D-2			D-6 
+	|_D__|.DP     		E-1			E-5
+				F-18			F-12
+				G-17(p6)		G-7(p16)
+				DP-4(p7)		DP-9(p17)
 */
 /*The first data byte in every pair refers to Port 0
 (P07 to P00), where as the second data byte in every pair refers to Port 1 (P17 to P10)
