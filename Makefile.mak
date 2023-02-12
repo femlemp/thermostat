@@ -74,7 +74,7 @@ clean:
 clean_target:
 	rm -Rf *.hex
 version:
-	($СС) --version > README.md.txt && cat README.md.txt | head -n1 | tail -n1 >> README.md && rm -rf README.md.txt
+	$(СC) --version > README.md.txt && cat README.md.txt | head -n1 | tail -n1 >> README.md && rm -rf README.md.txt
 
 ##command programmer flash file, set fuse etc...
 flash:
