@@ -5,7 +5,7 @@ F_CPU = 16000000UL
 
 ##translate
 CROSS-COMPILE = avr-
-СС = $(CROSS-COMPILE)gcc
+СC = $(CROSS-COMPILE)gcc
 CFLAGS_MACHIN = -mmcu=$(MCU)
 CFLAGS_PREPROC = -DF_CPU=$(F_CPU) -MD
 CFLAGS_STD_OPTIONS = --std=c99 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums  
@@ -17,10 +17,6 @@ CFLAGS = $(CFLAGS_MACHIN) $(CFLAGS_DIAG) $(CFLAGS_DEBUG) $(CFLAGS_PREPROC) $(CFL
 
 LDFLAGS = $(CFLAGS_MACHIN)
 
-SRC_FILES = ./twi.c ./drive_seg.c ./adc.c ./timer.c ./usart.c ./main.c
-OBJ_FILES = $(SRC_FILES:.c=.o)
-INC_FILES = -I ./
-
 OBJCOPY = $(CROSS-COMPILE)objcopy
 OBJ_FLAGS = -j .text -j .data -j .fuse -j .lock -j .signature 
 
@@ -30,7 +26,19 @@ DUMPFLAGS_MACHINE = -Pmem-usage
 
 ASSEMBLER = $(CROSS-COMPILE)as
 ASFLAGS = -Wa, 
- 	
+
+##DIR
+SRC = src
+SRC_DIR = $(PWD)/$(SRC)/
+BUILD = build
+BUILD_DIR = $(PWD)/$(BUILD)/
+SRC_FILES = timer.c twi.c usart.c adc.c drive_seg.c main.c
+OBJS = $(SRC_FILES:.c=.o)
+OBJ_FILES := $(addprefix $(BUILD_DIR),$(OBJS))
+INC = inc
+INC_DIR = $(PWD)/$(INC)/
+INC_FILES = -I$(INC_DIR)
+
 ##program
 PROGRAMM = avrdude
 PROGRAMMER = usbasp
@@ -40,29 +48,31 @@ FUSE_L = 0xFF
 FUSE_EXT = 0xFF
 PROG = $(PROGRAMM) -c $(PROGRAMMER) -p $(PROG_MCU)
 SIZE = size
+PWD =  $(shell pwd)
 
 ##main
 all: $(PROJECT).hex
 
-%.o: %.c
-	@$(СС) $(INC_FILES) $(CFLAGS) -c $< -o $@
+$(BUILD_DIR)%.o: $(SRC_DIR)%.c
+	@mkdir -p $(BUILD)
+	@$(СC) $(INC_FILES) $(CFLAGS) -c $< -o $@
+	
+$(BUILD_DIR)$(TARGET): $(OBJ_FILES)
+	@$(СC) $(LDFLAGS) $^ -o $@
+	@$(SIZE) $(BUILD_DIR)$(TARGET)
+	@$(OBJDUMP) $(DUMPFLAGS_MACHINE) $(BUILD_DIR)$(TARGET)
 
-$(TARGET): $(OBJ_FILES)
-	@$(СС) $(LDFLAGS) $^ -o $@
-	@$(SIZE) $(TARGET)
-	@$(OBJDUMP) $(DUMPFLAGS_MACHINE) $(TARGET)
 
-
-%.hex: $(TARGET)
+%.hex: $(BUILD_DIR)$(TARGET)
 	@$(OBJCOPY) $(OBJ_FLAGS) -O ihex $< $@
 	@echo HEX_DONE
-%.lst: $(TARGET)
-	$(OBJDUMP) $(DUMPFLAGS) $< > $@
 
 .PHONY: all clean flash fuse connect version
 ##command project
 clean:
-	rm -Rf $(OBJ_FILES) $(TARGET) $(PROJECT).elf *.d
+	rm -Rf $(BUILD_DIR)
+clean_target:
+	rm -Rf *.hex
 version:
 	($СС) --version > README.md.txt && cat README.md.txt | head -n1 | tail -n1 >> README.md && rm -rf README.md.txt
 
