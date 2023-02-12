@@ -4,15 +4,33 @@ MCU = atmega328p
 F_CPU = 16000000UL
 
 ##translate
-СС = avr-gcc 
-CFLAGS = -Os -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -Wall --std=c99
-SRC_FILES = ./main.c ./twi.c ./drive_seg.c ./adc.c ./timer.c ./usart.c
-OBJ_FILES = $(SRC_FILES:.c=.o)
-INC_FILES = -MD -MP -MT $(*F).o -MF $(*F).d
-COMP_MCU = -mmcu=$(MCU)
-OBJ_HEX = avr-objcopy
-OBJ_LST = avr-objdump
+CROSS-COMPILE = avr-
+СС = $(CROSS-COMPILE)gcc
+CFLAGS_MACHIN = -mmcu=$(MCU)
+CFLAGS_PREPROC = -DF_CPU=$(F_CPU) -MD
+CFLAGS_STD_OPTIONS = --std=c99 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums  
+CFLAGS_OPTIMZ = -Os 
+CFLAGS_DIAG = 
+CFLAGS_WARNINGS = -Wall
+CFLAGS_DEBUG = 
+CFLAGS = $(CFLAGS_MACHIN) $(CFLAGS_DIAG) $(CFLAGS_DEBUG) $(CFLAGS_PREPROC) $(CFLAGS_STD_OPTIONS) $(CFLAGS_OPTIMZ) $(CFLAGS_WARNINGS)
 
+LDFLAGS = $(CFLAGS_MACHIN)
+
+SRC_FILES = ./twi.c ./drive_seg.c ./adc.c ./timer.c ./usart.c ./main.c
+OBJ_FILES = $(SRC_FILES:.c=.o)
+INC_FILES = -I ./
+
+OBJCOPY = $(CROSS-COMPILE)objcopy
+OBJ_FLAGS = -j .text -j .data -j .fuse -j .lock -j .signature 
+
+OBJDUMP = $(CROSS-COMPILE)objdump
+DUMPFLAGS = -h -S
+DUMPFLAGS_MACHINE = -Pmem-usage
+
+ASSEMBLER = $(CROSS-COMPILE)as
+ASFLAGS = -Wa, 
+ 	
 ##program
 PROGRAMM = avrdude
 PROGRAMMER = usbasp
@@ -21,31 +39,34 @@ FUSE_H = 0xD9
 FUSE_L = 0xFF
 FUSE_EXT = 0xFF
 PROG = $(PROGRAMM) -c $(PROGRAMMER) -p $(PROG_MCU)
-FLASH_FLAGS = -j .text -j .data -j .fuse -j .lock -j .signature
-LDFLAGS = $(COMP_MCU) -Wl,-Map=$(PROJECT).map
-SIZE = size 
-DUMP_FLAGS = -h -S
+SIZE = size
 
-all: $(PROJECT).hex $(PROJECT).lst
+##main
+all: $(PROJECT).hex
 
 %.o: %.c
-	$(СС) $(COMP_MCU) $(CFLAGS) $(INC_FILES) -c $< -o $@
+	@$(СС) $(INC_FILES) $(CFLAGS) -c $< -o $@
 
 $(TARGET): $(OBJ_FILES)
-	$(СС) $(LDFLAGS) $^ -o $@
+	@$(СС) $(LDFLAGS) $^ -o $@
+	@$(SIZE) $(TARGET)
+	@$(OBJDUMP) $(DUMPFLAGS_MACHINE) $(TARGET)
+
 
 %.hex: $(TARGET)
-	$(OBJ_HEX) $(FLASH_FLAGS) -O ihex $< $@
-	$(SIZE) $(TARGET)
-
+	@$(OBJCOPY) $(OBJ_FLAGS) -O ihex $< $@
+	@echo HEX_DONE
 %.lst: $(TARGET)
-	$(OBJ_LST) $(DUMP_FLAGS) $< > $@
+	$(OBJDUMP) $(DUMPFLAGS) $< > $@
 
 .PHONY: all clean flash fuse connect version
-
+##command project
 clean:
-	rm -rf $(OBJ_FILES) $(TARGET) $(PROJECT).elf *.d
+	rm -Rf $(OBJ_FILES) $(TARGET) $(PROJECT).elf *.d
+version:
+	($СС) --version > README.md.txt && cat README.md.txt | head -n1 | tail -n1 >> README.md && rm -rf README.md.txt
 
+##command programmer flash file, set fuse etc...
 flash:
 	$(PROG) -U flash:w:$(PROJECT).hex
 	##-U eeprom:w:$(PROJECT).eep
@@ -53,5 +74,3 @@ fuse:
 	$(PROG) -U hfuse:w:$(FUSE_H):m -U lfuse:w:$(FUSE_L):m -U efuse:w:$(FUSE_EXT):m
 connect:
 	$(PROG)
-version:
-	($СС) --version > README.md.txt && cat README.md.txt | head -n1 | tail -n1 >> README.md && rm -rf README.md.txt
