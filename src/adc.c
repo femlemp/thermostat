@@ -34,4 +34,3 @@ double adc_conversion_volt(void){
 	res1 = buf * res2;
 	return res1;
 }
-
